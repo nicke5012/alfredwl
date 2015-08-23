@@ -4,10 +4,14 @@ import json
 import sys
 import xml.etree.ElementTree as ET
 
-with open('settings.json') as f:
-    settings = json.loads(f.read())
-access_token = settings['access_token']
-client_id = settings['client_id']
+try:
+    with open('settings.json') as f:
+        settings = json.loads(f.read())
+    access_token = settings['access_token']
+    client_id = settings['client_id']
+except:
+    client_id = None
+    access_token = None
 
 api_headers = {'X-Client-ID': client_id,
                'X-Access-Token': access_token,
@@ -112,8 +116,11 @@ def parse_complete_string(parse_string, delimiter):
     return
 
 def define_settings(client_id, access_token):
-    with open('settings.json') as f:
-        settings = json.loads(f.read())
+    try:
+        with open('settings.json') as f:
+            settings = json.loads(f.read())
+    except:
+        settings = {}
 
     settings['client_id'] = client_id
     settings['access_token'] = access_token
