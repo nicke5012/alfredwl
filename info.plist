@@ -176,7 +176,7 @@
 				<key>runningsubtext</key>
 				<string>Retrieving data</string>
 				<key>script</key>
-				<string>python alfredwl.py show {query}</string>
+				<string>python alfredwl.py show "{query}"</string>
 				<key>title</key>
 				<string>Show lists</string>
 				<key>type</key>

@@ -40,6 +40,8 @@ def to_xml(titles, args=None, valids=None, autocompletes=None):
 
     return ET.tostring(root)
 
+# TODO: Make showing things preserve order in list
+
 # TODO: Make subtext number of items -- slow with current API structure
 def get_lists():
     r = requests.get('https://a.wunderlist.com/api/v1/lists',
@@ -134,16 +136,16 @@ if __name__ == '__main__':
     try:
         query = sys.argv[2]
     except IndexError:
-        query = None
+        query = ''
 
     if command == 'add':
         print add_task(query)
 
     elif command == 'show':
-        if query is not None:
-            print show_list(query)
-        else:
+        if query =='':
             print get_lists()
+        else:
+            print show_list(query)
 
     # TODO: selecting a task shown marks as complete. Bug in Wunderlist API
     elif command == 'remove':
