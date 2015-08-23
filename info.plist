@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>nicke5012.alfredwl.workflow.v1</string>
+	<string>com.nicke5012.alfredwl</string>
 	<key>connections</key>
 	<dict>
 		<key>16039760-F173-4AB8-9C73-DA7401D5DE23</key>
