@@ -107,7 +107,7 @@
 				<key>subtext</key>
 				<string>Task name</string>
 				<key>text</key>
-				<string>Add Task</string>
+				<string>Add Task to Inbox</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
