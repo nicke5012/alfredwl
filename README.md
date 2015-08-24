@@ -51,4 +51,4 @@ Actions are initiated by keywords in Alfred. Start Alfred and type any of the fo
 - It'd be great to be able to mark a task as complete when you select it through `wlshow`, however I can't seem to get the API to work with PATCH in Python's Requests module. If anyone has any idea how to make this work let me know!
 
 ## Version History
-Aug 23 2015: v1 launch!
+1. Aug 23 2015: v1 launch!
