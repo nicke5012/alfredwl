@@ -42,7 +42,7 @@ def to_xml(titles, args=None, valids=None, autocompletes=None):
         title = ET.SubElement(item, 'title')
         title.text = titles[i]
 
-    return ET.tostring(root)
+    return ET.tostring(root, encoding='utf-8')
 
 # TODO: Make showing things preserve order in list
 
@@ -69,7 +69,7 @@ def show_list(list_name):
     task_titles = [i['title'] for i in r.json()]
     task_ids = [i['id'] for i in r.json()]
     task_revisions = [i['revision'] for i in r.json()]
-    task_args = ['{0};%;{1};%;{2}'.format(i, j, k) \
+    task_args = [u'{0};%;{1};%;{2}'.format(i, j, k) \
                  for i, j, k in zip(task_ids, task_revisions, task_titles)]
     # Create array of 'YES' to pass to to_xml to make things selectable
     valids = ['NO']*len(task_titles) #Not valid since complete_task doesn't work
