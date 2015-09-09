@@ -1,21 +1,11 @@
-__author__ = 'Nick Eng, nickeng@gmail.com'
+# -*- coding: utf-8 -*-
+
 import requests
 import json
 import sys
 import xml.etree.ElementTree as ET
 
-try:
-    with open('settings.json') as f:
-        settings = json.loads(f.read())
-    access_token = settings['access_token']
-    client_id = settings['client_id']
-except:
-    client_id = None
-    access_token = None
-
-api_headers = {'X-Client-ID': client_id,
-               'X-Access-Token': access_token,
-               'Content-Type': 'application/json'}
+__author__ = 'Nick Eng, nickeng@gmail.com'
 
 # Separator that delimits chained script filter commands
 separator = '>>'
@@ -93,7 +83,7 @@ def add_task(task_title):
         return 'Adding action failed'
 
 def complete_task(task_id, revision, task_name=None):
-    # This shit doesn't work what the fuck.
+    # Todo: figure out why this doesn't work with Requests
     r = requests.patch('https://a.wunderlist.com/api/v1/tasks/{0}'.format(task_id),
                       headers=api_headers,
                       data={'revision': revision})
@@ -129,6 +119,7 @@ def define_settings(client_id, access_token):
           f.write(json.dumps(settings))
     return
 
+# TODO: Figure out a more secure way to store credentials
 def setup(query):
     arguments = query.split(separator)
     client_id = arguments[0]
@@ -137,11 +128,27 @@ def setup(query):
     return (client_id, access_token)
 
 if __name__ == '__main__':
+
+# TODO: make a setup prompt if not set up
+
+    try:
+        with open('settings.json') as f:
+            settings = json.loads(f.read())
+        access_token = settings['access_token']
+        client_id = settings['client_id']
+    except:
+        client_id = None
+        access_token = None
+
+    api_headers = {'X-Client-ID': client_id,
+                   'X-Access-Token': access_token,
+                   'Content-Type': 'application/json'}
+
     assert len(sys.argv) > 1, "command argument is required"
     command = sys.argv[1]
 
     try:
-        query = sys.argv[2]
+        query = sys.argv[2].decode('utf-8')
     except IndexError:
         query = ''
 
@@ -154,7 +161,7 @@ if __name__ == '__main__':
         else:
             print show_list(query)
 
-    # TODO: selecting a task shown marks as complete. Bug in Wunderlist API
+    # TODO: selecting a task shown marks as complete. Not working yet.
     elif command == 'remove':
         parse_complete_string(query, ';%;')
 
