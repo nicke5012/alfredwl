@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
-
 import requests
 import json
 import sys
 import xml.etree.ElementTree as ET
+from unicodedata import normalize
 
 __author__ = 'Nick Eng, nickeng@gmail.com'
 
 # Separator that delimits chained script filter commands
 separator = '>>'
+
 
 # XML constructor for output to script filter
 def to_xml(titles, args=None, valids=None, autocompletes=None):
@@ -36,7 +36,6 @@ def to_xml(titles, args=None, valids=None, autocompletes=None):
 
 # TODO: Make showing things preserve order in list
 
-# TODO: Make subtext number of items -- slow with current API structure
 def get_lists():
     r = requests.get('https://a.wunderlist.com/api/v1/lists',
                      headers = api_headers)
@@ -44,7 +43,6 @@ def get_lists():
     # autocomplete_paths = [i + ' {0} '.format(separator) for i in list_names]
     return to_xml(list_names, autocompletes=list_names)
 
-# TODO: make subtext task description and other things
 def show_list(list_name):
     # Get list_id for the list that you want to show
     r = requests.get('https://a.wunderlist.com/api/v1/lists',
@@ -102,7 +100,7 @@ def parse_complete_string(parse_string, delimiter):
         task_name = parse_string.split(delimiter)[2]
     except IndexError:
         task_name = None
-    remove_task(task_id, revision, task_name)
+    complete_task(task_id, revision, task_name)
     return
 
 def define_settings(client_id, access_token):
@@ -148,7 +146,7 @@ if __name__ == '__main__':
     command = sys.argv[1]
 
     try:
-        query = sys.argv[2].decode('utf-8')
+        query = normalize('NFC', sys.argv[2].decode('utf-8'))
     except IndexError:
         query = ''
 
@@ -156,7 +154,7 @@ if __name__ == '__main__':
         print add_task(query)
 
     elif command == 'show':
-        if query =='':
+        if query == '':
             print get_lists()
         else:
             print show_list(query)
