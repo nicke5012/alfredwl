@@ -56,4 +56,4 @@ Actions are initiated by keywords in Alfred. Start Alfred and type any of the fo
       - added ability to mark tasks as completed through `wlshow`
       - added ability to specify which list to add a task to in `wladd`
     - Security improvements:
-      - Moved storage of credentials to the Keychain. Also, this means that from now on you'll no longer have to go through setup when updating the workflow!
+      - Moved storage of credentials to the Keychain. Also, this means that from now on you'll no longer have to go through setup when updating the workflow! (thanks to [deanishe and alfred-workflow](https://github.com/deanishe/alfred-workflow))
