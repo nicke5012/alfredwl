@@ -52,5 +52,8 @@ Actions are initiated by keywords in Alfred. Start Alfred and type any of the fo
 1. Aug 23 2015: v1 - launch!
 2. Sep 9 2015: v1.1 - fixed bugs caused by special characters
 3. Sep 17 2015: v1.2 - 
-    - New features: added ability to mark tasks as completed through `wlshow`, added ability to specify which list to add a task to in `wladd`
-    - Security improvements: Moved storage of credentials to the Keychain. Also, this means that from now on you'll no longer have to go through setup when updating the workflow!
+    - New features:
+      - added ability to mark tasks as completed through `wlshow`
+      - added ability to specify which list to add a task to in `wladd`
+    - Security improvements:
+      - Moved storage of credentials to the Keychain. Also, this means that from now on you'll no longer have to go through setup when updating the workflow!
