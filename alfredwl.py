@@ -1,17 +1,20 @@
 import requests
 import json
 import sys
+import subprocess
 import xml.etree.ElementTree as ET
 from unicodedata import normalize
+from workflow import Workflow
 
 __author__ = 'Nick Eng, nickeng@gmail.com'
 
 # Separator that delimits chained script filter commands
 separator = '>>'
 
+wf = Workflow()
 
 # XML constructor for output to script filter
-def to_xml(titles, args=None, valids=None, autocompletes=None):
+def to_xml(titles, args=(), valids=(), autocompletes=()):
 
     root = ET.Element('items')
 
@@ -20,13 +23,13 @@ def to_xml(titles, args=None, valids=None, autocompletes=None):
 
     for i, thing in enumerate(titles):
         item = ET.SubElement(root, 'item')
-        if args is not None:
+        if args:
             item.set('arg', args[i])
-        if valids is None:
-            item.set('valid', 'NO')
-        else:
+        if valids:
             item.set('valid', valids[i])
-        if autocompletes is not None:
+        else:
+            item.set('valid', 'NO')
+        if autocompletes:
             item.set('autocomplete', autocompletes[i])
 
         title = ET.SubElement(item, 'title')
@@ -34,21 +37,35 @@ def to_xml(titles, args=None, valids=None, autocompletes=None):
 
     return ET.tostring(root, encoding='utf-8')
 
-# TODO: Make showing things preserve order in list
 
-def get_lists():
+def get_credentials():
+    credentials = wf.get_password(u'alfredwl')
+    client_id, access_token = credentials.split('::')
+    return client_id, access_token
+
+
+def get_lists(api_headers):
     r = requests.get('https://a.wunderlist.com/api/v1/lists',
-                     headers = api_headers)
+                     headers=api_headers)
     list_names = [i['title'] for i in r.json()]
-    # autocomplete_paths = [i + ' {0} '.format(separator) for i in list_names]
     return to_xml(list_names, autocompletes=list_names)
 
-def show_list(list_name):
-    # Get list_id for the list that you want to show
+
+def get_valid_lists(api_headers):
     r = requests.get('https://a.wunderlist.com/api/v1/lists',
-                     headers = api_headers)
+                     headers=api_headers)
     list_id_dict = {i['title'].lower(): i['id'] for i in r.json()}
-    list_id = list_id_dict[list_name.lower()]
+    return list_id_dict
+
+
+def show_list(api_headers, list_name):
+    # TODO: speed this up
+    # Get list_id for the list that you want to show
+    valid_lists = get_valid_lists(api_headers)
+    try:
+        list_id = valid_lists[list_name.lower()]
+    except KeyError:
+        return to_xml(['No such list!'])
 
     # Actually retrieve the list
     r = requests.get('https://a.wunderlist.com/api/v1/tasks',
@@ -57,90 +74,90 @@ def show_list(list_name):
     task_titles = [i['title'] for i in r.json()]
     task_ids = [i['id'] for i in r.json()]
     task_revisions = [i['revision'] for i in r.json()]
-    task_args = [u'{0};%;{1};%;{2}'.format(i, j, k) \
+    task_args = [u'{0};%;{1};%;{2}'.format(i, j, k)
                  for i, j, k in zip(task_ids, task_revisions, task_titles)]
-    # Create array of 'YES' to pass to to_xml to make things selectable
-    valids = ['NO']*len(task_titles) #Not valid since complete_task doesn't work
+    valids = ['YES']*len(task_titles)
     return to_xml(task_titles, args=task_args, valids=valids)
 
-def add_task(task_title):
-    # Get first list_id which should be the inbox.
-    # This is where the new task will be placed by default.
-    r = requests.get('https://a.wunderlist.com/api/v1/lists',
-                     headers=api_headers)
-    first_list_id = r.json()[0]['id']
+
+def add_task(api_headers, task_description):
+    # Get list of valid lists
+    valid_lists = get_valid_lists(api_headers)
+
+    # Figure out which list to add to (Inbox or other)
+    try:
+        task_description_split = task_description.split('>>')
+        target_list_name = task_description_split[0]
+        task_title = task_description_split[1]
+        target_list_id = valid_lists[target_list_name.lower()]
+    except (IndexError, KeyError):
+        target_list_name = 'inbox'
+        task_title = task_description
+        target_list_id = valid_lists[target_list_name.lower()]
 
     # Actually add the task
     r = requests.post('https://a.wunderlist.com/api/v1/tasks',
                       headers=api_headers,
-                      data=json.dumps({'list_id': first_list_id,
+                      data=json.dumps({'list_id': target_list_id,
                                        'title': task_title}))
-    if 200 <= r.status_code < 300:
-        return task_title
-    else:
-        return 'Adding action failed'
 
-def complete_task(task_id, revision, task_name=None):
-    # Todo: figure out why this doesn't work with Requests
-    r = requests.patch('https://a.wunderlist.com/api/v1/tasks/{0}'.format(task_id),
-                      headers=api_headers,
-                      data={'revision': revision})
+    # Send back confirmation
     if 200 <= r.status_code < 300:
-        if task_name is not None:
+        return task_title + u' to ' + target_list_name
+    else:
+        return u'Add task failed'
+
+
+def complete_task(api_headers, task_id, revision, task_name=None):
+    # I have no idea why this doesn't work with Requests
+    # r = requests.patch('https://a.wunderlist.com/api/v1/tasks/{0}'.format(task_id),
+    #                   headers=api_headers,
+    #                   data={'revision': revision})
+
+    # Since this doesn't work with requests, I work with curl and subprocess instead
+    client_id_header = 'X-Client-ID: {0}'.format(api_headers['X-Client-ID'])
+    access_token_header = 'X-Access-Token: {0}'.format(api_headers['X-Access-Token'])
+    url = 'https://a.wunderlist.com/api/v1/tasks/{0}'.format(task_id)
+    data = '{{"revision": {0}, "completed": true}}'.format(revision)
+
+    curl_call = subprocess.Popen(['curl', '-H', client_id_header, '-H',
+                                  access_token_header, '-H',
+                                  'Content-Type: application/json', url, '-X',
+                                  'PATCH', '-d', data], stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+    output = json.loads(curl_call.communicate()[0])
+    output = {'completed': True}
+
+    if 'completed' in output and output['completed']==True:
+        if task_name:
             return task_name
         else:
-            return 'Task deleted'
+            return u'Task marked complete'
     else:
-        return 'Deletion action failed'
+        return u'Completion action failed'
 
-def parse_complete_string(parse_string, delimiter):
-    task_id = parse_string.split(delimiter)[0]
-    revision = parse_string.split(delimiter)[1]
+
+def parse_complete_string(api_headers, parse_string, delimiter):
+    split_string = parse_string.split(delimiter)
+    task_id = split_string[0]
+    revision = split_string[1]
     try:
-        task_name = parse_string.split(delimiter)[2]
+        task_name = split_string[2]
     except IndexError:
         task_name = None
-    complete_task(task_id, revision, task_name)
-    return
+    output = complete_task(api_headers, task_id, revision, task_name)
+    return output
 
-def define_settings(client_id, access_token):
-    try:
-        with open('settings.json') as f:
-            settings = json.loads(f.read())
-    except:
-        settings = {}
 
-    settings['client_id'] = client_id
-    settings['access_token'] = access_token
-
-    with open('settings.json', 'w+') as f:
-          f.write(json.dumps(settings))
-    return
-
-# TODO: Figure out a more secure way to store credentials
 def setup(query):
     arguments = query.split(separator)
     client_id = arguments[0]
     access_token = arguments[1]
-    define_settings(client_id, access_token)
-    return (client_id, access_token)
+    wf.save_password(u'alfredwl', client_id + '::' + access_token)
+    return client_id, access_token
+
 
 if __name__ == '__main__':
-
-# TODO: make a setup prompt if not set up
-
-    try:
-        with open('settings.json') as f:
-            settings = json.loads(f.read())
-        access_token = settings['access_token']
-        client_id = settings['client_id']
-    except:
-        client_id = None
-        access_token = None
-
-    api_headers = {'X-Client-ID': client_id,
-                   'X-Access-Token': access_token,
-                   'Content-Type': 'application/json'}
 
     assert len(sys.argv) > 1, "command argument is required"
     command = sys.argv[1]
@@ -150,20 +167,33 @@ if __name__ == '__main__':
     except IndexError:
         query = ''
 
-    if command == 'add':
-        print add_task(query)
-
-    elif command == 'show':
-        if query == '':
-            print get_lists()
-        else:
-            print show_list(query)
-
-    # TODO: selecting a task shown marks as complete. Not working yet.
-    elif command == 'remove':
-        parse_complete_string(query, ';%;')
-
-    elif command == 'setup':
+    if command == 'setup':
         client_id, access_token = setup(query)
         print 'Client ID: {0}, Access Token: {1}'\
             .format(client_id, access_token)
+
+    else:
+
+        try:
+            client_id, access_token = get_credentials()
+        except:
+            print to_xml(['Need to run setup!'])
+            sys.exit(0)
+
+        api_headers = {'X-Client-ID': client_id,
+                       'X-Access-Token': access_token,
+                       'Content-Type': 'application/json'}
+
+        if command == 'add':
+            print add_task(api_headers, query).encode('utf-8')
+
+        elif command == 'show':
+            if query == '':
+                print get_lists(api_headers)
+            else:
+                print show_list(api_headers, query)
+
+        elif command == 'complete':
+            print parse_complete_string(api_headers, query, ';%;').encode('utf-8')
+
+# Requests for Wunderlist API: Smartlists, ordering of lists/tasks

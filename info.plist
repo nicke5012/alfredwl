@@ -50,11 +50,22 @@
 				<string></string>
 			</dict>
 		</array>
+		<key>E157CA85-04E2-4DEF-811F-3E2217FCEFB8</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>59B5C9E1-25C7-4613-8A9B-28666E564C8F</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
 		<key>F437A0CA-7324-4370-97AB-3E187E143EE1</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>D3D7E69E-943B-4C03-985D-60F9F589CB57</string>
+				<string>E157CA85-04E2-4DEF-811F-3E2217FCEFB8</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -100,27 +111,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>keyword</key>
-				<string>wladd</string>
-				<key>subtext</key>
-				<string>Task name</string>
-				<key>text</key>
-				<string>Add Task to Inbox</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>2C99F6F1-EF16-4CF1-9762-5D05A1FFAA4D</string>
-			<key>version</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -140,19 +130,40 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>wladd</string>
+				<key>subtext</key>
+				<string>Task name</string>
+				<key>text</key>
+				<string>Add Task (Defaults to Inbox)</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>2C99F6F1-EF16-4CF1-9762-5D05A1FFAA4D</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfredwl2.py remove "{query}"</string>
+				<string>python alfredwl.py complete "{query}"</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>D3D7E69E-943B-4C03-985D-60F9F589CB57</string>
+			<string>E157CA85-04E2-4DEF-811F-3E2217FCEFB8</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -188,6 +199,31 @@
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
 			<string>F437A0CA-7324-4370-97AB-3E187E143EE1</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>output</key>
+				<integer>0</integer>
+				<key>removeextension</key>
+				<false/>
+				<key>sticky</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Marked complete</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>59B5C9E1-25C7-4613-8A9B-28666E564C8F</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -286,7 +322,12 @@
 			<key>ypos</key>
 			<real>300</real>
 		</dict>
-		<key>D3D7E69E-943B-4C03-985D-60F9F589CB57</key>
+		<key>59B5C9E1-25C7-4613-8A9B-28666E564C8F</key>
+		<dict>
+			<key>ypos</key>
+			<real>180</real>
+		</dict>
+		<key>E157CA85-04E2-4DEF-811F-3E2217FCEFB8</key>
 		<dict>
 			<key>ypos</key>
 			<real>180</real>
